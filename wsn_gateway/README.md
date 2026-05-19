@@ -52,6 +52,13 @@ mkdir credentials
 cd credentials/
 ```
 
+Create `CMakeLists.txt` with content:
+```txt
+idf_component_register(
+    INCLUDE_DIRS "."
+)
+```
+
 Create `network_credential.h` with this template:
 ```c
 #ifndef NETWORK_CREDENTIALS_H
@@ -73,3 +80,4 @@ Create `network_credential.h` with this template:
 
 #endif /* NETWORK_CREDENTIALS_H */
 ```
+and replay `<field>` with your credentials.
