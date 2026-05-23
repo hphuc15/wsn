@@ -6,29 +6,7 @@
 ├── credentials
 │   ├── CMakeLists.txt
 │   └── network_credential.h
-├── hardware
-│   ├── button
-│   │   ├── button.c
-│   │   └── button.h
-│   ├── led
-│   │   ├── led.c
-│   │   └── led.h
-│   ├── CMakeLists.txt
-│   ├── status.c
-│   └── status.h
-├── network
-│   ├── recv
-│   ├── send
-│   │   ├── http
-│   │   │   ├── http_transport.c
-│   │   │   └── http_transport.h
-│   │   └── wifi
-│   │       ├── WiFiManager
-│   │       ├── wifi.c
-│   │       └── wifi.h
-│   ├── CMakeLists.txt
-│   ├── network.c
-│   └── network.h
+├── recv                        # SX127x implement in LoRa mode
 └── .gitignore
 
 📁 main
