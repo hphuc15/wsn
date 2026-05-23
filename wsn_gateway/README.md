@@ -6,7 +6,7 @@
 ├── credentials
 │   ├── CMakeLists.txt
 │   └── network_credential.h
-├── recv                        # SX127x implement in LoRa mode
+├── recv                        # SX127x implement in LoRa modem
 └── .gitignore
 
 📁 main
