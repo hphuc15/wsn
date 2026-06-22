@@ -80,3 +80,4 @@ Desktop.ini
 # Personal
 .vscode
 .clangd
+tests/
