@@ -1,0 +1,12 @@
+idf_component_register(
+    SRCS
+        "utils_nvs/utils_nvs.c"
+        "utils_rtos/utils_rtos.c"
+    INCLUDE_DIRS
+        "."
+        "utils_log"
+        "utils_nvs"
+        "utils_rtos"
+    REQUIRES
+        nvs_flash
+)
