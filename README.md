@@ -23,7 +23,7 @@ This is the `wsn_gateway` implementation in the `wsn` architecture.
 │   │   ├── CMakeLists.txt
 │   │   ├── receiver.c
 │   │   ├── receiver.h
-│   │   └── sx127x/                         <!-- Github: hphuc15/bare_drivers - commint soon :) -->
+│   │   └── sx127x/                         <!-- Github: hphuc15/bare_drivers - comming soon :) -->
 │   └── utilities
 ├── main                                    <!-- Main program -->
 │   ├── CMakeLists.txt
