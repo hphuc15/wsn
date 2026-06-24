@@ -1,59 +1,70 @@
-# Wireless Sensor Network - WSN
+# wsn_server
 
-> Design a wireless sensor network for monitoring temperature, humidity,
-> and soil moisture in agricultural fields.
+This branch documents the `wsn_server`.
 
-## Overview
-
-This project measures environmental properties commonly used in
-agricultural applications, such as `temperature`, `humidity`, and
-`soil moisture`. It uses an `SHT31` sensor and a `capacitive soil moisture`
-sensor to monitor temperature, humidity, and soil moisture at the
-`wsn_node`, which then sends the collected data to the `wsn_gateway` via
-the `LoRa` protocol. The `wsn_gateway` forwards the data to the
-`wsn_server`, choosing between `HTTP(s)` or `MQTT(s)` via the gateway's
-configuration portal. The `wsn_server` handles and stores the data,
-exposing it to a frontend for users.
-
-![WSN Architecture](docs/architecture/architecture.png)
-
-## Structure
-| Branch         | Contents                           |
-|----------------|------------------------------------|
-| `wsn_docs`     | Documentation                      |
-| `wsn_node` (comming soon)     | Node firmware                      |
-| `wsn_gateway`  | Gateway firmware                   |
-| `wsn_server` (comming soon)   | Server architecture & review notes |
-
-## Getting Started
-Each component lives on its own branch - clone the one you need.
-
-### wsn_node (STM32)
-```bash
-git clone --branch wsn_node --single-branch https://github.com/hphuc15/wsn.git wsn_node
-cd wsn_node
-```
-
-### wsn_gateway (ESP32)
-```bash
-git clone --branch wsn_gateway --single-branch https://github.com/hphuc15/wsn.git wsn_gateway
-cd wsn_gateway
-```
-
-### wsn_server
-The `wsn_server` branch contains architecture notes and review material for the backend and frontend rather than source code. See [Architecture](#architecture) above for how it fits into the system.
-
-## Documentation
-
-This branch contains the full documentation set:
-
-- [`docs/architecture/`](.\docs\architecture) - system architecture & data flow
-- [`docs/troubleshooting/`](./troubleshooting/) - known issues & debugging guides
-- [`docs/setup/`](./setup/) - prerequisites & full configuration reference
-
+> `Scope:` This branch covers only the `controller`, `plugin`, and `MQTT` layers of the backend.
 
 ## Tech Stack
-`STM32Cube` · `ESP-IDF` · `FreeRTOS` · `LoRa` · `Drogon` · `MariaDB` · `MQTT(s)` · `HTTP(s)` · `Vue 3`
 
-## License
-This project is licensed under the [Apache License 2.0](LICENSE).
+- `Frontend:` Vue 3
+- `Backend:` Drogon (C++)
+- `Database:` MariaDB
+
+## Structure
+
+- `Controllers` - HTTP route handlers, request/response logic
+- `Plugins` - Drogon plugins (DB client)
+- `MQTT` - subscriber/publisher integration for ingesting data from `wsn_gateway`
+
+## Getting Started
+
+```bash
+# Build
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+
+# Run
+./wsn_server
+```
+
+See the [Drogon documentation](https://github.com/drogonframework/drogon-docs) for full prerequisites (C++ compiler, CMake, Drogon itself, JsonCpp, etc.).
+
+## Configuration
+
+Database connection is configured via `config_example.json`. Copy it, fill in your values, and rename to `config.json` before running the server:
+
+Edit the `db_clients` section in `config.json`:
+
+```json
+"name":                     "wsn",
+"rdbms":                    "mysql",
+"host":                     "127.0.0.1",
+"port":                     3306,
+"dbname":                   "wsn_db",
+"user":                     "your_db_user",
+"passwd":                   "your_db_password",
+"is_fast":                  false,
+"number_of_connections":    5,
+"timeout":                  -1.0,
+"auto_batch":               false
+```
+
+### What you can change
+
+|           Field           |         Description         |
+|---------------------------|-----------------------------|
+| `host` / `port`           | MariaDB server address      |
+| `user` / `passwd`         | DB credentials              |
+| `number_of_connections`   | Connection pool size        |
+| `timeout`                 | Query timeout in seconds    |
+| `is_fast` / `auto_batch`  | Drogon DB client behavior - see [Drogon docs](https://github.com/drogonframework/drogon-docs) for details |
+
+### What NOT to change
+
+- **`name`** (`"wsn"`) and **`dbname`** (`"wsn_db"`) are hardcoded in the controllers' DB client lookups. Change them only if you also update every controller that references them.
+## Notes
+
+- `rdbms` stays `"mysql"` even for MariaDB - Drogon only recognizes `mysql`, `postgresql`, and `sqlite3`. MariaDB is wire-compatible with MySQL, so it uses the same driver.
+- Using a different `rdbms`? You'll likely need to redesign the schema in `wsn_migration.sql`, since column types and syntax don't always port across engines.
+- Currently deployed inside a WSL2 VM with port forwarding to the Windows host. Drogon itself supports other environments (e.g. Docker) - see the [Drogon docs](https://github.com/drogonframework/drogon-docs). Future versions may target one of these.
