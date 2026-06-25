@@ -21,9 +21,9 @@ exposing it to a frontend for users.
 | Branch         | Contents                           |
 |----------------|------------------------------------|
 | `wsn_docs`     | Documentation                      |
-| `wsn_node` (comming soon)     | Node firmware                      |
+| `wsn_node` (comming soon)    | Node firmware                      |
 | `wsn_gateway`  | Gateway firmware                   |
-| `wsn_server` (comming soon)   | Server architecture & review notes |
+| `wsn_server`   | Server architecture & review notes |
 
 ## Getting Started
 Each component lives on its own branch - clone the one you need.
