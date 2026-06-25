@@ -59,16 +59,24 @@ int http_publish(const char *data){
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&cfg);
-    // esp_http_client_set_header(client, "Authorization", auth);                   /* Maybe */
-    esp_http_client_set_header(client, "Content-Type",  "application/json");
+    if (!client) {
+        Utils_LogE(TAG_HTTP, "Failed to init HTTP client.");
+        return -1;
+    }
+
+    esp_http_client_set_header(client, "Content-Type", "application/json");
     esp_http_client_set_post_field(client, data, strlen(data));
 
     esp_err_t err = esp_http_client_perform(client);
-    if(err != ESP_OK){
+    if (err != ESP_OK) {
         Utils_LogE(TAG_HTTP, "HTTP POST request failed: %s", esp_err_to_name(err));
+        esp_http_client_cleanup(client);
         return -1;
     }
-    esp_http_client_cleanup(client);
 
+    int status = esp_http_client_get_status_code(client);
+    Utils_LogI(TAG_HTTP, "HTTP POST status: %d", status);
+
+    esp_http_client_cleanup(client);
     return 0;
 }
