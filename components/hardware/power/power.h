@@ -26,4 +26,6 @@ int power_sleep(void);
  */
 int power_led_blink(bool on);
 
+int power_led(bool on);
+
 #endif /* POWER_H */

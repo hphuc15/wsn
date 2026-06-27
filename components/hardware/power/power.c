@@ -104,7 +104,7 @@ int power_sleep(void)
 /* LED */
 /* ================================================================== */
 
-static int _power_led(bool on)
+int power_led(bool on)
 {
     return gpio_set_level(POWER_GPIO_STATUS_LED, on) == ESP_OK ? 0 : -1;
 }
@@ -113,9 +113,9 @@ static void _led_blink_task(void *arg)
 {
     while (1)
     {
-        _power_led(true);
+        power_led(true);
         Utils_DelayMs(POWER_LED_BLINK_INTERVAL_MS);
-        _power_led(false);
+        power_led(false);
         Utils_DelayMs(POWER_LED_BLINK_INTERVAL_MS);
     }
 }
@@ -139,7 +139,7 @@ int power_led_blink(bool on)
         {
             vTaskDelete(s_led_blink_task_handle);
             s_led_blink_task_handle = NULL;
-            _power_led(false);
+            power_led(false);
         }
     }
     return 0;
@@ -162,13 +162,6 @@ int power_init(void)
     }
 
     if (_gpio_init() != 0)
-    {
-        return -1;
-    }
-
-    /* Block wakeup if battery is too low, before enabling the sensor rail */
-
-    if (_power_led(true) != 0)
     {
         return -1;
     }

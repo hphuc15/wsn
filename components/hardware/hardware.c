@@ -30,3 +30,7 @@ int hardware_led_blink(bool on)
 {
     return power_led_blink(on);
 }
+
+int hardware_led(bool on){
+    return power_led(on);
+}
