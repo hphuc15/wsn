@@ -21,7 +21,7 @@ idf_component_register(
 
     REQUIRES
         utilities config
-        esp_wifi nvs_flash esp_http_server esp_event # WiFiPanel
+        esp_wifi nvs_flash esp_http_server esp_event app_update # WiFiPanel
         esp_http_client mbedtls
         mqtt
 )
