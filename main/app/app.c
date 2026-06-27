@@ -54,26 +54,28 @@ static void forward_task(void *args)
  *  Existing callbacks
  * ================================================================ */
 
-void short_press(void)
-{
+void short_press(void) {
     s_config_mode = true;
-    power_led_blink(true);
+    hardware_led_blink(true);
     network_config();
-    power_led_blink(false);
+    hardware_led_blink(false);
     s_config_mode = false;
 }
 
-void long_press(void)
-{
+void long_press(void) {
     hardware_shutdown();
 }
 
 void connected_wifi(void)
 {
+    hardware_led(true);
 }
 
-void disconnected_wifi(void)
-{
+void disconnected_wifi(void) {
+    if(s_config_mode){
+        return ;
+    }
+    hardware_led(false);
 }
 
 int app_init(void)
@@ -87,6 +89,12 @@ int app_init(void)
         return -1;
     }
 
+    network_set_wifi_connected_cb(connected_wifi);
+    network_set_wifi_disconnected_cb(disconnected_wifi);
+    network_init();
+
+    Utils_DelayMs(5000);
+    
     if (receiver_init() != 0)
     {
         Utils_LogE("[APP]", "receiver_init failed");
@@ -98,10 +106,6 @@ int app_init(void)
         Utils_LogE("[APP]", "receiver_start failed");
         return -1;
     }
-
-    network_set_wifi_connected_cb(connected_wifi);
-    network_set_wifi_disconnected_cb(disconnected_wifi);
-    network_init();
 
     /* Pinned to core 1, same side as recv_task - keeps node-side work
      * (LoRa RX + forwarding) off core 0, which handles WiFi/HTTP/MQTT. */
