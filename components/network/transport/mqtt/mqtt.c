@@ -71,8 +71,9 @@ int mqtt_init(const char *host, uint32_t port, const char *topic, const char *us
             .address = {
                 .hostname = host,
                 .port = port,
-                .transport = tls ? MQTT_TRANSPORT_OVER_SSL
-                                 : MQTT_TRANSPORT_OVER_TCP,
+                .transport = tls ? MQTT_TRANSPORT_OVER_WSS
+                                 : MQTT_TRANSPORT_OVER_WS,
+                .path = "/mqtt"
             },
             .verification.crt_bundle_attach = tls ? esp_crt_bundle_attach : NULL,
         },
