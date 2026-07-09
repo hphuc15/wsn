@@ -456,16 +456,15 @@ int Receiver_ToJson(const Receiver_Packet *pkt, char *out_buf, size_t buf_len)
         return -1;
     }
 
-    /* Fields are x0.1 fixed-point; divide back to float for output. */
     int n = snprintf(out_buf, buf_len,
                       "{\"device_id\":%u,\"temp\":%.1f,\"humi\":%.1f,\"soil_humi\":%.1f}",
                       pkt->device_id,
-                      pkt->temp_c / 10.0f,
-                      pkt->humi_rh / 10.0f,
-                      pkt->soil_humi_vwc / 10.0f);
+                      pkt->temp_c / 100.0f,
+                      pkt->humi_rh / 100.0f,
+                      pkt->soil_humi_vwc / 100.0f);
 
     if (n < 0 || (size_t)n >= buf_len) {
-        return -1;   /* truncated or snprintf error */
+        return -1;
     }
 
     return n;
