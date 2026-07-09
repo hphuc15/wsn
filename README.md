@@ -1,7 +1,6 @@
 # Wireless Sensor Network - WSN
 
-> Design a wireless sensor network for monitoring temperature, humidity,
-> and soil moisture in agricultural fields.
+Design a wireless sensor network for monitoring temperature, humidity, and soil moisture in agricultural fields.
 
 ## Overview
 
@@ -18,20 +17,20 @@ exposing it to a frontend for users.
 ![WSN Architecture](docs/architecture/architecture.png)
 
 ## Structure
-| Branch         | Contents                           |
-|----------------|------------------------------------|
-| `wsn_docs`     | Documentation                      |
-| `wsn_node` (comming soon)    | Node firmware                      |
-| `wsn_gateway`  | Gateway firmware                   |
-| `wsn_server`   | Server architecture & review notes |
+| Branch                                                            | Contents                           |
+|-------------------------------------------------------------------|------------------------------------|
+| [`wsn_docs`](https://github.com/hphuc15/wsn/tree/wsn_docs)        | Documentations                     |
+| [`wsn_node`](https://github.com/hphuc15/wsn/tree/wsn_node) (comming soon)        | WSN node firmware                  |
+| [`wsn_gateway`](https://github.com/hphuc15/wsn/tree/wsn_gateway)  | WSN gateway firmware               |
+| [`wsn_server`](https://github.com/hphuc15/wsn/tree/wsn_server)    | Server architecture & review notes |
 
 ## Getting Started
 Each component lives on its own branch - clone the one you need.
 
-### wsn_node (STM32)
+### wsn_node (unavailable now :)
 ```bash
-git clone --branch wsn_node --single-branch https://github.com/hphuc15/wsn.git wsn_node
-cd wsn_node
+# git clone --branch wsn_node --single-branch https://github.com/hphuc15/wsn.git wsn_node
+# cd wsn_node
 ```
 
 ### wsn_gateway (ESP32)
@@ -56,4 +55,4 @@ This branch contains the full documentation set:
 `STM32Cube` · `ESP-IDF` · `FreeRTOS` · `LoRa` · `Drogon` · `MariaDB` · `MQTT(s)` · `HTTP(s)` · `Vue 3`
 
 ## License
-This project is licensed under the [Apache License 2.0](LICENSE).
+This project is licensed under the [`Apache-2.0 License`](LICENSE).
