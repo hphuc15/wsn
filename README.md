@@ -1,8 +1,24 @@
-## Overview
-This is the `wsn_gateway` implementation in the `wsn` architecture.
+# WSN Gateway
 
-## Structure
-```text
+[![Framework](https://img.shields.io/badge/Framework-ESP--IDF-blue.svg)](https://docs.espressif.com/projects/esp-idf/en/latest/)
+[![Platform](https://img.shields.io/badge/Platform-ESP32-green.svg)](https://www.espressif.com/en/products/socs/esp32)
+[![License](https://img.shields.io/badge/License-Apache%202.0-red.svg)](LICENSE)
+
+## Overview
+
+This is the central gateway in a `wsn` (Wireless Sensor Network) architecture. It bridges LoRa-based sensor nodes and cloud/on-premise servers via Wi-Fi. The gateway receives sensor data over LoRa, forwards it to a configured server using HTTP(s) or MQTT(s), and can also send beacon commands to nodes.
+
+## Features
+
+- `Dual‑protocol support`: switch between HTTP and MQTT protocols at runtime.
+- `Secure connections`: TLS support for both HTTP(s) and MQTT(s).
+- `Automatic Wi-Fi provisioning`: through a web‑based captive portal (WiFiPanel).
+- `LoRa modulation`: send beacon and receive node data.
+- `Credential management`: stored securely in NVS.
+
+## Project Structure
+
+```
 📁 wsn_gateway
 ├── CMakeLists.txt
 ├── LICENSE
@@ -23,7 +39,7 @@ This is the `wsn_gateway` implementation in the `wsn` architecture.
 │   │   ├── CMakeLists.txt
 │   │   ├── receiver.c
 │   │   ├── receiver.h
-│   │   └── sx127x/                         <!-- Github: hphuc15/bare_drivers -->
+│   │   └── sx127x/                         <!-- Github: hphuc15/baredrv -->
 │   └── utilities
 ├── main                                    <!-- Main program -->
 │   ├── CMakeLists.txt
@@ -32,40 +48,52 @@ This is the `wsn_gateway` implementation in the `wsn` architecture.
 └── sdkconfig
 ```
 
-## Setup
-> Firstly, clone `wsn_gateway` to the project directory:
+## Configuration
+
+### 1. Clone the Repository
+
 ```bash
-git clone https://github.com/hphuc15/wsn_gateway.git
+git clone --branch wsn_gateway --single-branch https://github.com/hphuc15/wsn.git wsn_gateway
 cd wsn_gateway
 ```
 
-> Replace the credentials in `.\wsn_gateway\components\config\config_credentials_example.h` by your credentials, then rename this file to `config_credentials.h`.
-```c
-/**
- * You will need to replace these field by your setup credentials.
- * Then change this file name from config_credentials_example.h to
- * config_credentials.h
- */
-#ifndef CONFIG_CREDENTIALS_H
-#define CONFIG_CREDENTIALS_H
+### 2. Set up
 
-/* WiFi portal credentials */
-#define CRE_WP_AP_SSID              "HelloWorld"
-#define CRE_WP_AP_PASSWORD          "12345678"
-/* Server credentials */
-#define CRE_NVS_NAMESPACE_SERVER    "wsn_server_np"
-#define CRE_NVS_KEY_PROTOCOL        "wsn_communication_protocol_nvskey"
-#define CRE_NVS_KEY_SERVERHOST      "wsn_endpoint_host_nvskey"
-#define CRE_NVS_KEY_SERVERPORT      "wsn_endpoint_port_nvskey"
-#define CRE_NVS_KEY_SERVERPATH      "wsn_endpoint_path_nvskey"
-#define CRE_NVS_KEY_SERVERAUTH      "wsn_endpoint_auth_nvskey"
-#define CRE_NVS_KEY_MQTTTOPIC       "wsn_endpoint_mqtt_topic_nvskey"
-/* Default server endpoint */
-#define CRE_NETWORK_DEFAULT_HOST    "wsn_default_server_host"
-#define CRE_NETWORK_DEFAULT_PORT    443
-#define CRE_NETWORK_DEFAULT_PATH    "wsn/example/ingest/data"
-#define CRE_NETWORK_DEFAULT_TLS     true
+Copy the example configuration file and edit it with your own credentials:
 
-#endif /* CONFIG_CREDENTIALS_H */
+```bash
+cp components/config/config_credentials_example.h components/config/config_credentials.h
 ```
-> Build and flash this firmware to `ESP32`. This program was written in `ESP-IDF` framework.
+
+Open `components/config/config_credentials.h` and replace the placeholder values:
+
+```c
+/* Wi‑Fi AP credentials (used for captive portal) */
+#define CRE_WP_AP_SSID              "YourAccessPointSSID"
+#define CRE_WP_AP_PASSWORD          "YourAccessPointPassword"
+
+/* Server endpoint defaults - stored in NVS */
+#define CRE_NVS_NAMESPACE_SERVER    "wsn_server"
+#define CRE_NVS_KEY_PROTOCOL        "wsn_protocol"
+#define CRE_NVS_KEY_SERVERHOST      "wsn_host"
+#define CRE_NVS_KEY_SERVERPORT      "wsn_port"
+#define CRE_NVS_KEY_SERVERPATH      "wsn_path"
+#define CRE_NVS_KEY_SERVERAUTH      "wsn_auth"
+#define CRE_NVS_KEY_MQTTTOPIC       "wsn_mqtt_topic"
+
+/* Fallback server settings (used if NVS is empty) */
+#define CRE_NETWORK_DEFAULT_HOST    "your.server.com"
+#define CRE_NETWORK_DEFAULT_PORT    443
+#define CRE_NETWORK_DEFAULT_PATH    "/api/ingest"
+#define CRE_NETWORK_DEFAULT_TLS     true
+```
+`Note`: NVS key names are limited to 15 ASCII characters. Do not change the predefined keys unless you update the source code accordingly.
+
+## Build
+Build and flash this firmware to `ESP32`. This program was written in `ESP-IDF` framework.
+
+## License
+This project is licensed under the Apache-2.0 License.
+
+## Contributing
+Contributions are welcome! Please open an issue or submit a pull request for any improvements, bug fixes, or new features.
