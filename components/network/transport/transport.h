@@ -4,11 +4,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+/** @brief Transport protocol type. */
 typedef enum {
     TRANSPORT_HTTP = 0,
     TRANSPORT_MQTT,
 } transport_protocol_e;
 
+/** @brief HTTP transport config. */
 typedef struct {
     char     host[64];
     uint32_t port;
@@ -16,15 +18,17 @@ typedef struct {
     bool     tls;           /**< true = HTTPS */
 } http_config_t;
 
+/** @brief MQTT transport config. */
 typedef struct {
     char     host[64];
     uint32_t port;
     char     topic[128];
     char     username[64];  /**< device token / username */
-    char     password[64];  /**< leave empty if token-based */
+    char     password[64];  /**< empty if token-based */
     bool     tls;           /**< true = MQTT over TLS */
 } mqtt_config_t;
 
+/** @brief Active transport config. */
 typedef struct {
     transport_protocol_e protocol;
     union {
@@ -34,16 +38,13 @@ typedef struct {
 } transport_config_t;
 
 /**
- * @brief Load transport config from NVS.
- *        Falls back to default (credentials.h) if key missing.
- *        Must be called before transport_init().
+ * @brief Load transport config from NVS, fallback to default if missing.
  * @return 0 on success, -1 on fatal error.
  */
 int transport_load_config(void);
 
 /**
  * @brief Initialize transport layer using the loaded config.
- *        Must be called after transport_load_config().
  * @return 0 on success, -1 on fail.
  */
 int transport_init(void);

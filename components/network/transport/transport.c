@@ -12,7 +12,7 @@
 #define NETWORK_DEFAULT_PATH        CRE_NETWORK_DEFAULT_PATH
 #define NETWORK_DEFAULT_TLS         CRE_NETWORK_DEFAULT_TLS
 
-static const char *TAG = "[NETWORK][TRANSPORT]";
+static const char *TAG = "[NW][TRANSPORT]";
 
 static const transport_config_t default_config = {
     .protocol = NETWORK_DEFAULT_PROTOCOL,
@@ -23,19 +23,20 @@ static const transport_config_t default_config = {
         .tls  = NETWORK_DEFAULT_TLS,
     }
 };
+
 static transport_config_t config = {0};
 
-int transport_load_config(void) {
+int transport_load_config(void){
     if (Utils_NVS_Init() != UTILS_OK) {
-        Utils_LogE(TAG, "Failed to initialize NVS. Using default server config.");
+        Utils_LogW(TAG, "NVS init failed, using default config.");
         config = default_config;
         return 0;
     }
 
     char protocol[8] = {0};
-    Utils_Status st = Utils_NVS_ReadString(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_PROTOCOL, protocol, sizeof(protocol));
-    if (st != UTILS_OK) {
-        Utils_LogW(TAG, "Read protocol failed (status=%d), using default config.", st);
+    if (Utils_NVS_ReadString(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_PROTOCOL,
+                              protocol, sizeof(protocol)) != UTILS_OK) {
+        Utils_LogW(TAG, "No protocol in NVS, using default config.");
         config = default_config;
         return 0;
     }
@@ -52,34 +53,39 @@ int transport_load_config(void) {
         if (Utils_NVS_ReadString(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_SERVERPATH, config.http.path, sizeof(config.http.path)) != UTILS_OK) {
             strncpy(config.http.path, default_config.http.path, sizeof(config.http.path));
         }
-        if (Utils_NVS_ReadInt(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_SERVERPORT, &port_val) == UTILS_OK) {
-            config.http.port = (uint32_t)port_val;
-        } else {
-            config.http.port = default_config.http.port;
-        }
+        config.http.port = (Utils_NVS_ReadInt(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_SERVERPORT,
+            &port_val) == UTILS_OK) ? (uint32_t)port_val : default_config.http.port;
+
+        Utils_LogI(TAG, "Config: HTTP%s host=%s port=%" PRIu32 " path=%s",
+            config.http.tls ? "S" : "", config.http.host, config.http.port, config.http.path);
 
     } else if (strcmp(protocol, "mqtt") == 0 || strcmp(protocol, "mqtts") == 0) {
         config.protocol = TRANSPORT_MQTT;
         config.mqtt.tls = (strcmp(protocol, "mqtts") == 0);
 
-        if (Utils_NVS_ReadString(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_SERVERHOST, config.mqtt.host, sizeof(config.mqtt.host)) != UTILS_OK) {
+        if (Utils_NVS_ReadString(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_SERVERHOST,
+            config.mqtt.host, sizeof(config.mqtt.host)) != UTILS_OK) {
             strncpy(config.mqtt.host, default_config.http.host, sizeof(config.mqtt.host));
         }
-        if (Utils_NVS_ReadString(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_SERVERPATH, config.mqtt.topic, sizeof(config.mqtt.topic)) != UTILS_OK) {
+        if (Utils_NVS_ReadString(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_SERVERPATH,
+            config.mqtt.topic, sizeof(config.mqtt.topic)) != UTILS_OK) {
             strncpy(config.mqtt.topic, default_config.http.path, sizeof(config.mqtt.topic));
         }
-        if (Utils_NVS_ReadInt(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_SERVERPORT, &port_val) == UTILS_OK) {
-            config.mqtt.port = (uint32_t)port_val;
-        } else {
-            config.mqtt.port = default_config.http.port;
-        }
-        if (Utils_NVS_ReadString(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_SERVERAUTH, config.mqtt.username, sizeof(config.mqtt.username)) != UTILS_OK) {
+        config.mqtt.port = (Utils_NVS_ReadInt(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_SERVERPORT,
+            &port_val) == UTILS_OK) ? (uint32_t)port_val : default_config.http.port;
+
+        if (Utils_NVS_ReadString(CRE_NVS_NAMESPACE_SERVER, CRE_NVS_KEY_SERVERAUTH,
+            config.mqtt.username, sizeof(config.mqtt.username)) != UTILS_OK) {
             config.mqtt.username[0] = '\0';
         }
         config.mqtt.password[0] = '\0';
 
+        Utils_LogI(TAG, "Config: MQTT%s host=%s port=%" PRIu32 " topic=%s user=%s.",
+            config.mqtt.tls ? "S" : "", config.mqtt.host, config.mqtt.port,
+            config.mqtt.topic, config.mqtt.username);
+
     } else {
-        Utils_LogE(TAG, "Unknown protocol: %s", protocol);
+        Utils_LogE(TAG, "Unknown protocol: %s.", protocol);
         config = default_config;
         return 0;
     }
@@ -87,26 +93,20 @@ int transport_load_config(void) {
     return 0;
 }
 
-int transport_init(void) {
+int transport_init(void){
     switch (config.protocol) {
         case TRANSPORT_HTTP:
             return http_init(config.http.host, config.http.port, config.http.path, config.http.tls);
         case TRANSPORT_MQTT:
-            Utils_LogI(TAG,
-               "MQTT host=%s port=%" PRIu32 " topic=%s tls=%d user=%s",
-               config.mqtt.host,
-               config.mqtt.port,
-               config.mqtt.topic,
-               config.mqtt.tls,
-               config.mqtt.username);
-            return mqtt_init(config.mqtt.host, config.mqtt.port, config.mqtt.topic, config.mqtt.username, config.mqtt.password, config.mqtt.tls);
+            return mqtt_init(config.mqtt.host, config.mqtt.port, config.mqtt.topic,
+                config.mqtt.username, config.mqtt.password, config.mqtt.tls);
         default:
             Utils_LogE(TAG, "Unknown transport protocol.");
             return -1;
     }
 }
 
-int transport_publish(const char *data) {
+int transport_publish(const char *data){
     switch (config.protocol) {
         case TRANSPORT_HTTP:
             return http_publish(data);
@@ -118,7 +118,7 @@ int transport_publish(const char *data) {
     }
 }
 
-void transport_deinit(void) {
+void transport_deinit(void){
     if (config.protocol == TRANSPORT_MQTT) {
         mqtt_deinit();
     }

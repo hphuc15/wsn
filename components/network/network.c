@@ -9,7 +9,7 @@
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 
-static const char *TAG = "[NETWORK]";
+static const char *TAG = "[NW]";
 
 #define NETWORK_BIT_TRANSPORT_READY BIT0
 
@@ -18,7 +18,7 @@ typedef void (*wifi_cb_t)(void);
 static wifi_cb_t          s_app_connected_cb = NULL;
 static EventGroupHandle_t s_net_eg           = NULL;
 
-static void on_wifi_connected(void) {
+static void on_wifi_connected(void){
     if (s_app_connected_cb) {
         s_app_connected_cb();
     }
@@ -31,21 +31,20 @@ static void on_wifi_connected(void) {
         return;
     }
     if (transport_init() != 0) {
-        Utils_LogE(TAG, "Failed to initialize transport.");
+        Utils_LogE(TAG, "Failed to init transport.");
         return;
     }
-    Utils_LogI(TAG, "Transport OK.");
 
+    Utils_LogI(TAG, "Transport ready.");
     xEventGroupSetBits(s_net_eg, NETWORK_BIT_TRANSPORT_READY);
 }
 
-int network_send(const char *data) {
+int network_send(const char *data){
     return transport_publish(data);
 }
 
-int network_config(void) {
+int network_config(void){
     xEventGroupClearBits(s_net_eg, NETWORK_BIT_TRANSPORT_READY);
-
     transport_deinit();
 
     if (wifi_config() != 0) {
@@ -64,20 +63,15 @@ int network_config(void) {
     return ret;
 }
 
-void network_set_wifi_connected_cb(void *cb) {
+void network_set_wifi_connected_cb(void *cb){
     s_app_connected_cb = (wifi_cb_t)cb;
 }
 
-void network_set_wifi_disconnected_cb(void *cb) {
+void network_set_wifi_disconnected_cb(void *cb){
     wifi_set_disconnected_cb(cb);
 }
 
-/**
- * @brief Block until the transport (HTTP URL / MQTT client) is ready to publish.
- * @param timeout_ms 0 = wait forever.
- * @return true if ready, false on timeout.
- */
-bool network_wait_ready(uint32_t timeout_ms) {
+bool network_wait_ready(uint32_t timeout_ms){
     if (!s_net_eg) {
         return false;
     }
@@ -87,9 +81,9 @@ bool network_wait_ready(uint32_t timeout_ms) {
     return (bits & NETWORK_BIT_TRANSPORT_READY) != 0;
 }
 
-static void network_init_task(void *args) {
+static void network_init_task(void *args){
     if (wifi_init() != 0) {
-        Utils_LogE(TAG, "Failed to initialize WiFi.");
+        Utils_LogE(TAG, "Failed to init WiFi.");
         vTaskDelete(NULL);
         return;
     }
@@ -103,7 +97,7 @@ static void network_init_task(void *args) {
     vTaskDelete(NULL);
 }
 
-int network_init(void) {
+int network_init(void){
     s_net_eg = xEventGroupCreate();
     if (!s_net_eg) {
         Utils_LogE(TAG, "Failed to create event group.");
@@ -114,7 +108,7 @@ int network_init(void) {
     return (ret == pdPASS) ? 0 : -1;
 }
 
-void network_deinit(void) {
+void network_deinit(void){
     transport_deinit();
     if (s_net_eg) {
         vEventGroupDelete(s_net_eg);
